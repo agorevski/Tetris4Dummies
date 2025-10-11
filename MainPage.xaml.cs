@@ -8,6 +8,7 @@ public partial class MainPage : ContentPage
 	private readonly GameState _gameState;
 	private readonly GameDrawable _gameDrawable;
 	private System.Timers.Timer? _gameTimer;
+	private const double GameTickIntervalMs = 500; // Move down every 500ms
 
 	public MainPage()
 	{
@@ -16,6 +17,13 @@ public partial class MainPage : ContentPage
 		_gameState = new GameState();
 		_gameDrawable = new GameDrawable(_gameState);
 		GameCanvas.Drawable = _gameDrawable;
+	}
+
+	protected override void OnDisappearing()
+	{
+		base.OnDisappearing();
+		_gameTimer?.Stop();
+		_gameTimer?.Dispose();
 	}
 
 	private void OnNewGameClicked(object? sender, EventArgs e)
@@ -27,6 +35,7 @@ public partial class MainPage : ContentPage
 	{
 		// Stop existing timer if any
 		_gameTimer?.Stop();
+		_gameTimer?.Dispose();
 		
 		// Start new game
 		_gameState.StartNewGame();
@@ -34,7 +43,7 @@ public partial class MainPage : ContentPage
 		GameCanvas.Invalidate();
 		
 		// Start game loop
-		_gameTimer = new System.Timers.Timer(500); // Move down every 500ms
+		_gameTimer = new System.Timers.Timer(GameTickIntervalMs);
 		_gameTimer.Elapsed += OnGameTimerTick;
 		_gameTimer.Start();
 	}

@@ -89,7 +89,7 @@ public class GameDrawable : IDrawable
     private void DrawGameOver(ICanvas canvas, RectF dirtyRect)
     {
         // Semi-transparent overlay
-        canvas.FillColor = new Color(0, 0, 0, 0.7f);
+        canvas.FillColor = Colors.Black.WithAlpha(0.7f);
         canvas.FillRectangle(dirtyRect);
         
         // Game Over text
