@@ -1,23 +1,82 @@
-﻿namespace Tetris4Dummies;
+﻿using Tetris4Dummies.Models;
+using Tetris4Dummies.Graphics;
+
+namespace Tetris4Dummies;
 
 public partial class MainPage : ContentPage
 {
-	int count = 0;
+	private readonly GameState _gameState;
+	private readonly GameDrawable _gameDrawable;
+	private System.Timers.Timer? _gameTimer;
 
 	public MainPage()
 	{
 		InitializeComponent();
+		
+		_gameState = new GameState();
+		_gameDrawable = new GameDrawable(_gameState);
+		GameCanvas.Drawable = _gameDrawable;
 	}
 
-	private void OnCounterClicked(object? sender, EventArgs e)
+	private void OnNewGameClicked(object? sender, EventArgs e)
 	{
-		count++;
+		StartNewGame();
+	}
 
-		if (count == 1)
-			CounterBtn.Text = $"Clicked {count} time";
-		else
-			CounterBtn.Text = $"Clicked {count} times";
+	private void StartNewGame()
+	{
+		// Stop existing timer if any
+		_gameTimer?.Stop();
+		
+		// Start new game
+		_gameState.StartNewGame();
+		UpdateScore();
+		GameCanvas.Invalidate();
+		
+		// Start game loop
+		_gameTimer = new System.Timers.Timer(500); // Move down every 500ms
+		_gameTimer.Elapsed += OnGameTimerTick;
+		_gameTimer.Start();
+	}
 
-		SemanticScreenReader.Announce(CounterBtn.Text);
+	private void OnGameTimerTick(object? sender, System.Timers.ElapsedEventArgs e)
+	{
+		MainThread.BeginInvokeOnMainThread(() =>
+		{
+			if (!_gameState.IsGameOver)
+			{
+				_gameState.MoveDown();
+				UpdateScore();
+				GameCanvas.Invalidate();
+			}
+			else
+			{
+				_gameTimer?.Stop();
+			}
+		});
+	}
+
+	private void OnLeftClicked(object? sender, EventArgs e)
+	{
+		_gameState.MoveLeft();
+		GameCanvas.Invalidate();
+	}
+
+	private void OnRightClicked(object? sender, EventArgs e)
+	{
+		_gameState.MoveRight();
+		GameCanvas.Invalidate();
+	}
+
+	private void OnDropClicked(object? sender, EventArgs e)
+	{
+		_gameState.Drop();
+		UpdateScore();
+		GameCanvas.Invalidate();
+	}
+
+	private void UpdateScore()
+	{
+		ScoreLabel.Text = $"Score: {_gameState.Score}";
 	}
 }
