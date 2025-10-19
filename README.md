@@ -1,73 +1,45 @@
 # Tetris4Dummies
 
-A Tetris clone for Android except that all of the piece types are 1 single square block (hence, the game is for dummies).
+A simplified Tetris clone where all pieces are single blocks. Built with .NET MAUI for cross-platform deployment.
 
-This game is built using .NET MAUI (Multi-platform App UI), which is the evolution of Xamarin. While currently configured for Android, it can be easily ported to iOS by modifying the `TargetFrameworks` in the project file.
+## Quick Start
+
+```bash
+# Install workload
+dotnet workload install maui-android
+
+# Run the game
+dotnet build -f net9.0-android -t:Run
+```
+
+## How to Play
+
+1. Tap **New Game** to start
+2. Use controls to move the falling block:
+   - **◄** Move left
+   - **►** Move right
+   - **▼** Drop instantly
+3. Fill complete rows to score 100 points per line
+4. Game ends when blocks reach the top
 
 ## Features
 
-- Simple single-block Tetris gameplay
-- Score tracking (100 points per line cleared)
-- Touch controls for left, right, and drop actions
-- Game over detection
+- Single-block gameplay (Tetris made simple!)
+- Cross-platform support (Android, iOS, Windows, macOS)
 - Clean, minimalist UI
+- Touch and button controls
+
+## Documentation
+
+- **[Getting Started](docs/getting-started.md)** - Installation, building, and running
+- **[Architecture](docs/architecture.md)** - Project structure and design patterns
+- **[Platform Porting](docs/porting.md)** - Adding iOS, Windows, and other platforms
 
 ## Requirements
 
 - .NET 9.0 SDK or later
-- .NET MAUI workload for Android
+- .NET MAUI workload for your target platform
 
-## Building the Project
+## License
 
-1. Install the .NET MAUI Android workload:
-   ```bash
-   dotnet workload install maui-android
-   ```
-
-2. Restore dependencies:
-   ```bash
-   dotnet restore
-   ```
-
-3. Build the project:
-   ```bash
-   dotnet build -f net9.0-android
-   ```
-
-## Running on Android
-
-To run on an Android device or emulator:
-```bash
-dotnet build -f net9.0-android -t:Run
-```
-
-## Porting to iOS
-
-To enable iOS support, update the `TargetFrameworks` in `Tetris4Dummies.csproj`:
-
-```xml
-<TargetFrameworks>net9.0-android;net9.0-ios</TargetFrameworks>
-```
-
-Then install the iOS workload:
-```bash
-dotnet workload install maui-ios
-```
-
-## Project Structure
-
-- `Models/` - Core game logic (GameGrid, GamePiece, GameState)
-- `Graphics/` - Custom graphics rendering for the game canvas
-- `MainPage.xaml` - UI layout
-- `MainPage.xaml.cs` - UI logic and game controls
-
-## How to Play
-
-1. Tap "New Game" to start
-2. Use the arrow buttons to move the falling block:
-   - ◄ Move left
-   - ► Move right
-   - ▼ Drop instantly
-3. Fill complete rows to score points and clear them
-4. Game ends when blocks reach the top
-
+Open source - feel free to learn from and modify this code.

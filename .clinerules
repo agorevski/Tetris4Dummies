@@ -1,0 +1,191 @@
+# Tetris4Dummies - Cline Rules
+
+## Project Overview
+
+This is a simplified Tetris clone built with .NET MAUI that uses single-block pieces instead of traditional Tetris shapes. The game is currently configured for Android but supports cross-platform deployment to iOS, Windows, macOS, and other platforms through MAUI.
+
+## Technology Stack
+
+- **Framework**: .NET MAUI (Multi-platform App UI)
+- **Language**: C# 12 with .NET 9.0
+- **UI**: XAML with code-behind pattern
+- **Target Platforms**: Android (primary), with support for iOS, Windows, macOS, Tizen
+- **Graphics**: Microsoft.Maui.Graphics (IDrawable pattern)
+
+## Project Structure
+
+```text
+Tetris4Dummies/
+├── Models/              # Core game logic (GameGrid, GamePiece, GameState)
+├── Graphics/            # Custom rendering (GameDrawable)
+├── Platforms/           # Platform-specific code (Android, iOS, Windows, etc.)
+├── Resources/           # Assets (fonts, images, icons, splash screens, styles)
+├── MainPage.xaml[.cs]   # Main UI and game controls
+├── App.xaml[.cs]        # Application lifecycle
+└── AppShell.xaml[.cs]   # App navigation shell
+```
+
+## Coding Standards
+
+### C# Conventions
+
+- Use **PascalCase** for: classes, methods, properties, public fields, namespaces
+- Use **camelCase with underscore prefix** for private fields: `_grid`, `_currentPiece`
+- Use **camelCase** for: local variables, parameters
+- Enable **nullable reference types** (`<Nullable>enable</Nullable>` in .csproj)
+- Always use **explicit types** instead of `var` where it improves clarity
+- Use **XML documentation comments** (`///`) for all public APIs
+
+### MAUI-Specific Patterns
+
+- Use **partial classes** for XAML code-behind (e.g., `public partial class MainPage`)
+- Follow **MVVM pattern** where appropriate, but code-behind is acceptable for simple UI logic
+- Use **data binding** for dynamic UI updates when possible
+- Leverage **dependency injection** through `MauiProgram.cs` for services
+- Use **platform conditionals** when needed: `#if ANDROID`, `#if IOS`, etc.
+
+### Game Architecture
+
+- **Models**: Pure game logic, no UI dependencies
+- **Graphics**: Rendering logic using `IDrawable` interface
+- **UI**: XAML for layout, code-behind for event handling and game loop
+- **Separation**: Keep game state management separate from rendering and UI
+
+### Documentation
+
+- Add XML comments to all public classes, methods, and properties
+- Use `<summary>` tags to describe purpose
+- Include `<param>` tags for method parameters
+- Document any non-obvious behavior or edge cases
+
+## Best Practices
+
+### Mobile Development
+
+- **Performance**: Minimize allocations in game loop (reuse objects where possible)
+- **Threading**: Use `MainThread.BeginInvokeOnMainThread()` for UI updates from background threads
+- **Resource Management**: Dispose of timers, event handlers properly (see `OnDisappearing`)
+- **Screen Sizes**: Design for various screen resolutions and aspect ratios
+
+### MAUI Patterns
+
+- Use **`Microsoft.Maui.Graphics`** for custom drawing (not platform-specific APIs)
+- Leverage **`GraphicsView`** with `IDrawable` for game rendering
+- Use **`System.Timers.Timer`** for game loop timing
+- Handle **lifecycle events** properly (OnAppearing, OnDisappearing)
+
+### Code Organization
+
+- Keep **Models** independent of UI framework
+- Place **platform-specific code** in `Platforms/` directories
+- Use **Resources** for all assets (images, fonts, colors, styles)
+- Define **shared resources** in `Resources/Styles/` XAML files
+
+## Common Commands
+
+### Building
+
+```bash
+# Restore dependencies
+dotnet restore
+
+# Build for Android
+dotnet build -f net9.0-android
+
+# Build for iOS (requires macOS and workload)
+dotnet build -f net9.0-ios
+```
+
+### Running
+
+```bash
+# Run on Android device/emulator
+dotnet build -f net9.0-android -t:Run
+
+# Run on iOS simulator (macOS only)
+dotnet build -f net9.0-ios -t:Run
+```
+
+### Workloads
+
+```bash
+# Install Android workload
+dotnet workload install maui-android
+
+# Install iOS workload (macOS only)
+dotnet workload install maui-ios
+```
+
+## File Patterns
+
+### When Creating New Files
+
+- **Models**: Add to `Models/` directory, namespace `Tetris4Dummies.Models`
+- **Graphics**: Add to `Graphics/` directory, implement `IDrawable` if rendering
+- **Pages**: Add `.xaml` and `.xaml.cs` files at root level
+- **Resources**: Add to appropriate `Resources/` subdirectory
+
+### Naming Conventions
+
+- **XAML files**: `PascalCase.xaml` (e.g., `MainPage.xaml`)
+- **Code-behind**: `PascalCase.xaml.cs` (e.g., `MainPage.xaml.cs`)
+- **Models**: `PascalCase.cs` (e.g., `GameState.cs`)
+- **Interfaces**: `IPascalCase.cs` (e.g., `IDrawable.cs`)
+
+## Platform Targeting
+
+### Current Configuration
+
+- Primary target: **Android** (API 21+)
+- Configured in `.csproj`: `<TargetFrameworks>net9.0-android</TargetFrameworks>`
+
+### Adding Platforms
+
+To support additional platforms, update `TargetFrameworks`:
+
+```xml
+<TargetFrameworks>net9.0-android;net9.0-ios;net9.0-windows10.0.19041.0</TargetFrameworks>
+```
+
+### Platform-Specific Code
+
+- Use conditional compilation: `#if ANDROID`, `#if IOS`, `#if WINDOWS`
+- Place platform code in `Platforms/{PlatformName}/` directories
+- Leverage MAUI abstractions before resorting to platform-specific APIs
+
+## Game-Specific Notes
+
+### Game Logic
+
+- **Single-block pieces**: Unlike traditional Tetris, all pieces are 1x1 blocks
+- **Grid**: 20 rows × 10 columns (standard Tetris dimensions)
+- **Scoring**: 100 points per line cleared
+- **Controls**: Left, Right, Drop (instant fall)
+
+### Key Classes
+
+- **GameState**: Manages overall game state, spawning, scoring, game over
+- **GameGrid**: 2D grid data structure, line clearing logic
+- **GamePiece**: Represents falling block (always 1x1 in this game)
+- **GameDrawable**: Renders the game grid and current piece
+
+### Timing
+
+- Game loop runs on a timer (see `MainPage.xaml.cs`)
+- Use `System.Timers.Timer` for consistent timing across platforms
+- Update UI on main thread using `MainThread.BeginInvokeOnMainThread()`
+
+## When Making Changes
+
+1. **Analyze first**: Understand how changes affect game logic, rendering, and UI
+2. **Maintain separation**: Keep Models independent of UI concerns
+3. **Test on target platform**: Build and run on Android (or intended platform)
+4. **Follow patterns**: Match existing code style and architecture
+5. **Document**: Add XML comments for new public APIs
+6. **Consider performance**: Avoid allocations in game loop or render methods
+
+## Additional Resources
+
+- .NET MAUI Docs: https://learn.microsoft.com/dotnet/maui/
+- Microsoft.Maui.Graphics: https://learn.microsoft.com/dotnet/maui/user-interface/graphics/
+- C# Coding Conventions: https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions
