@@ -15,14 +15,38 @@ This is a simplified Tetris clone built with .NET MAUI that uses single-block pi
 ## Project Structure
 
 ```text
-Tetris4Dummies/
-├── Models/              # Core game logic (GameGrid, GamePiece, GameState)
-├── Graphics/            # Custom rendering (GameDrawable)
-├── Platforms/           # Platform-specific code (Android, iOS, Windows, etc.)
-├── Resources/           # Assets (fonts, images, icons, splash screens, styles)
-├── MainPage.xaml[.cs]   # Main UI and game controls
-├── App.xaml[.cs]        # Application lifecycle
-└── AppShell.xaml[.cs]   # App navigation shell
+Tetris4Dummies/                    # Solution root
+├── src/                           # Source code
+│   └── Tetris4Dummies/           # Main project
+│       ├── Core/                  # Core business logic
+│       │   ├── Models/           # Game models (GameGrid, GamePiece, GameState)
+│       │   ├── Services/         # Business services (future: scoring, persistence)
+│       │   └── Helpers/          # Utility classes (IRandomProvider, RandomProvider)
+│       ├── Presentation/          # UI layer
+│       │   ├── Views/            # XAML pages (MainPage.xaml)
+│       │   ├── Graphics/         # Custom rendering (GameDrawable)
+│       │   └── Styles/           # XAML styles (Colors.xaml, Styles.xaml)
+│       ├── Platforms/            # Platform-specific code
+│       ├── Resources/            # Assets only (fonts, images, icons, splash)
+│       ├── Properties/           # Project properties
+│       ├── App.xaml[.cs]         # Application entry point
+│       ├── AppShell.xaml[.cs]    # Shell navigation
+│       ├── MauiProgram.cs        # DI configuration
+│       ├── GlobalXmlns.cs        # Global XAML namespaces
+│       └── Tetris4Dummies.csproj
+│
+├── tests/                         # Test projects
+│   └── Tetris4Dummies.Tests/
+│       ├── Core/
+│       │   ├── Models/           # Model tests
+│       │   └── Helpers/          # Helper tests
+│       └── Tetris4Dummies.Tests.csproj
+│
+├── docs/                          # Documentation
+├── Tetris4Dummies.sln            # Solution file
+├── .clinerules                    # Cline configuration
+├── .gitignore                     # Git ignore rules
+└── README.md                      # Project readme
 ```
 
 ## Coding Standards
@@ -120,10 +144,11 @@ dotnet workload install maui-ios
 
 ### When Creating New Files
 
-- **Models**: Add to `Models/` directory, namespace `Tetris4Dummies.Models`
-- **Graphics**: Add to `Graphics/` directory, implement `IDrawable` if rendering
-- **Pages**: Add `.xaml` and `.xaml.cs` files at root level
-- **Resources**: Add to appropriate `Resources/` subdirectory
+- **Models**: Add to `src/Tetris4Dummies/Core/Models/` directory, namespace `Tetris4Dummies.Core.Models`
+- **Helpers**: Add to `src/Tetris4Dummies/Core/Helpers/` directory, namespace `Tetris4Dummies.Core.Helpers`
+- **Graphics**: Add to `src/Tetris4Dummies/Presentation/Graphics/` directory, namespace `Tetris4Dummies.Presentation.Graphics`
+- **Views**: Add to `src/Tetris4Dummies/Presentation/Views/` directory, namespace `Tetris4Dummies.Presentation.Views`
+- **Resources**: Add to appropriate `src/Tetris4Dummies/Resources/` subdirectory
 
 ### Naming Conventions
 

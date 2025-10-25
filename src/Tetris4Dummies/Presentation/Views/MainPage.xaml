@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Tetris4Dummies.Presentation.Views.MainPage"
+             BackgroundColor="Black">
+
+    <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Score Display -->
+        <VerticalStackLayout Grid.Row="0" Spacing="10" Margin="0,0,0,20">
+            <Label Text="Tetris4Dummies" 
+                   FontSize="32" 
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center" />
+            <Label x:Name="ScoreLabel" 
+                   Text="Score: 0" 
+                   FontSize="20"
+                   TextColor="White"
+                   HorizontalOptions="Center" />
+        </VerticalStackLayout>
+
+        <!-- Game Canvas -->
+        <Border Grid.Row="1" 
+                StrokeThickness="2"
+                Stroke="White"
+                HorizontalOptions="Center"
+                VerticalOptions="Center">
+            <GraphicsView x:Name="GameCanvas"
+                          WidthRequest="300"
+                          HeightRequest="600"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Center" />
+        </Border>
+
+        <!-- Controls -->
+        <VerticalStackLayout Grid.Row="2" Spacing="15" Margin="0,20,0,0">
+            <!-- New Game Button -->
+            <Button x:Name="NewGameBtn"
+                    Text="New Game"
+                    Clicked="OnNewGameClicked"
+                    BackgroundColor="#512BD4"
+                    TextColor="White"
+                    FontSize="18"
+                    HeightRequest="50" />
+            
+            <!-- Movement Controls -->
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="60" />
+                    <RowDefinition Height="60" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Button -->
+                <Button Grid.Row="1" Grid.Column="0"
+                        Text="◄"
+                        Clicked="OnLeftClicked"
+                        BackgroundColor="#333"
+                        TextColor="White"
+                        FontSize="24" />
+
+                <!-- Drop Button -->
+                <Button Grid.Row="1" Grid.Column="1"
+                        Text="▼"
+                        Clicked="OnDropClicked"
+                        BackgroundColor="#333"
+                        TextColor="White"
+                        FontSize="24" />
+
+                <!-- Right Button -->
+                <Button Grid.Row="1" Grid.Column="2"
+                        Text="►"
+                        Clicked="OnRightClicked"
+                        BackgroundColor="#333"
+                        TextColor="White"
+                        FontSize="24" />
+            </Grid>
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>
