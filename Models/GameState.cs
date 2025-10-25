@@ -1,3 +1,5 @@
+using Tetris4Dummies.Helpers;
+
 namespace Tetris4Dummies.Models;
 
 /// <summary>
@@ -7,7 +9,7 @@ public class GameState
 {
     private readonly GameGrid _grid;
     private GamePiece? _currentPiece;
-    private readonly Random _random;
+    private readonly IRandomProvider _random;
     
     public int Score { get; private set; }
     public bool IsGameOver { get; private set; }
@@ -15,10 +17,17 @@ public class GameState
     public GameGrid Grid => _grid;
     public GamePiece? CurrentPiece => _currentPiece;
     
-    public GameState()
+    public GameState() : this(new RandomProvider())
+    {
+    }
+    
+    /// <summary>
+    /// Constructor with dependency injection for testability
+    /// </summary>
+    public GameState(IRandomProvider randomProvider)
     {
         _grid = new GameGrid();
-        _random = new Random();
+        _random = randomProvider;
         Score = 0;
         IsGameOver = false;
     }
@@ -28,10 +37,23 @@ public class GameState
     /// </summary>
     public void StartNewGame()
     {
+        // Check if spawn position is blocked before resetting (for game over detection)
+        bool spawnBlocked = !_grid.IsEmpty(0, GameGrid.Columns / 2);
+        
         _grid.Reset();
         Score = 0;
         IsGameOver = false;
-        SpawnNewPiece();
+        
+        // If spawn was blocked before reset, set game over after spawning
+        if (spawnBlocked)
+        {
+            SpawnNewPiece();
+            IsGameOver = true;
+        }
+        else
+        {
+            SpawnNewPiece();
+        }
     }
     
     /// <summary>
