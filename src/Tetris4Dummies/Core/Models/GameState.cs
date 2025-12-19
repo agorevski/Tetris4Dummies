@@ -7,14 +7,11 @@ namespace Tetris4Dummies.Core.Models;
 /// </summary>
 public class GameState
 {
-    // Scoring constants (Classic Tetris scoring)
-    public const int SingleLineScore = 40;
-    public const int DoubleLineScore = 100;
-    public const int TripleLineScore = 300;
-    public const int TetrisScore = 1200;
-    
-    // Progression constants
-    public const int LinesPerLevel = 10;
+    // Scoring constants kept for backward compatibility (delegates to ScoringService)
+    public static int SingleLineScore => ScoringService.SingleLineScore;
+    public static int DoubleLineScore => ScoringService.DoubleLineScore;
+    public static int TripleLineScore => ScoringService.TripleLineScore;
+    public static int TetrisScore => ScoringService.TetrisScore;
     
     // Color constants
     public const int MinColorIndex = 1;
@@ -24,6 +21,7 @@ public class GameState
     private GamePiece? _currentPiece;
     private GamePiece? _nextPiece;
     private readonly IRandomProvider _random;
+    private readonly IScoringService _scoringService;
     
     public int Score { get; private set; }
     public int Level { get; private set; }
@@ -34,17 +32,25 @@ public class GameState
     public GamePiece? CurrentPiece => _currentPiece;
     public GamePiece? NextPiece => _nextPiece;
     
-    public GameState() : this(new RandomProvider())
+    public GameState() : this(new RandomProvider(), new ScoringService())
     {
     }
     
     /// <summary>
     /// Constructor with dependency injection for testability
     /// </summary>
-    public GameState(IRandomProvider randomProvider)
+    public GameState(IRandomProvider randomProvider) : this(randomProvider, new ScoringService())
+    {
+    }
+    
+    /// <summary>
+    /// Constructor with full dependency injection for testability
+    /// </summary>
+    public GameState(IRandomProvider randomProvider, IScoringService scoringService)
     {
         _grid = new GameGrid();
         _random = randomProvider;
+        _scoringService = scoringService;
         Score = 0;
         Level = 1;
         Lines = 0;
@@ -210,7 +216,7 @@ public class GameState
     }
     
     /// <summary>
-    /// Updates the score based on lines cleared using classic Tetris scoring
+    /// Updates the score based on lines cleared using the scoring service
     /// </summary>
     private void UpdateScore(int linesCleared)
     {
@@ -218,18 +224,7 @@ public class GameState
             return;
         
         Lines += linesCleared;
-        
-        // Classic Tetris scoring: points * level
-        int basePoints = linesCleared switch
-        {
-            1 => SingleLineScore,
-            2 => DoubleLineScore,
-            3 => TripleLineScore,
-            4 => TetrisScore,
-            _ => linesCleared * SingleLineScore
-        };
-        Score += basePoints * Level;
-        
-        Level = (Lines / LinesPerLevel) + 1;
+        Score += _scoringService.CalculateScore(linesCleared, Level);
+        Level = _scoringService.CalculateLevel(Lines);
     }
 }

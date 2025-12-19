@@ -1,9 +1,34 @@
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Moq;
 using Tetris4Dummies.Core.Helpers;
 using Tetris4Dummies.Core.Models;
 
 namespace Tetris4Dummies.Tests.Core.Models;
+
+/// <summary>
+/// Extension methods to avoid null-forgiving operators in tests (Anti-Pattern #4 fix)
+/// </summary>
+internal static class GameStateTestExtensions
+{
+    /// <summary>
+    /// Asserts CurrentPiece is not null and returns it for fluent chaining
+    /// </summary>
+    public static GamePiece GetCurrentPieceOrFail(this GameState gameState)
+    {
+        gameState.CurrentPiece.Should().NotBeNull("CurrentPiece should exist for this test");
+        return gameState.CurrentPiece!;
+    }
+    
+    /// <summary>
+    /// Asserts NextPiece is not null and returns it for fluent chaining
+    /// </summary>
+    public static GamePiece GetNextPieceOrFail(this GameState gameState)
+    {
+        gameState.NextPiece.Should().NotBeNull("NextPiece should exist for this test");
+        return gameState.NextPiece!;
+    }
+}
 
 /// <summary>
 /// Comprehensive unit tests for GameState class with mocked randomness
@@ -61,9 +86,10 @@ public class GameStateTests
         // Assert
         gameState.Score.Should().Be(0, "score should be reset");
         gameState.IsGameOver.Should().BeFalse("game should not be over");
-        gameState.CurrentPiece.Should().NotBeNull("a piece should be spawned");
-        gameState.CurrentPiece!.Row.Should().Be(0, "piece should start at top");
-        gameState.CurrentPiece.Column.Should().Be(5, "piece should start at center column (10/2)");
+        
+        var currentPiece = gameState.GetCurrentPieceOrFail();
+        currentPiece.Row.Should().Be(0, "piece should start at top");
+        currentPiece.Column.Should().Be(5, "piece should start at center column (10/2)");
     }
     
     [Fact]
@@ -139,14 +165,14 @@ public class GameStateTests
         Mock<IRandomProvider> mockRandom = CreateMockRandom();
         GameState gameState = new GameState(mockRandom.Object);
         gameState.StartNewGame();
-        int initialRow = gameState.CurrentPiece!.Row;
+        int initialRow = gameState.GetCurrentPieceOrFail().Row;
         
         // Act
         bool result = gameState.MoveDown();
         
         // Assert
         result.Should().BeTrue("piece should be able to move down");
-        gameState.CurrentPiece!.Row.Should().Be(initialRow + 1, "piece should have moved down one row");
+        gameState.GetCurrentPieceOrFail().Row.Should().Be(initialRow + 1, "piece should have moved down one row");
     }
     
     [Fact]
@@ -158,7 +184,7 @@ public class GameStateTests
         gameState.StartNewGame();
         
         // Move piece to bottom
-        while (gameState.CurrentPiece!.Row < GameGrid.Rows - 1)
+        while (gameState.GetCurrentPieceOrFail().Row < GameGrid.Rows - 1)
         {
             gameState.MoveDown();
         }
@@ -168,7 +194,7 @@ public class GameStateTests
         
         // Assert
         result.Should().BeFalse("piece should have landed");
-        gameState.CurrentPiece!.Row.Should().Be(0, "new piece should be spawned at top");
+        gameState.GetCurrentPieceOrFail().Row.Should().Be(0, "new piece should be spawned at top");
         gameState.Grid[GameGrid.Rows - 1, 5].Should().BePositive("old piece should be locked in grid with a color");
     }
     
@@ -189,7 +215,7 @@ public class GameStateTests
         // Assert
         result.Should().BeFalse("piece should have locked");
         gameState.Grid[1, 5].Should().BePositive("piece should be locked at row 1 with a color");
-        gameState.CurrentPiece!.Row.Should().Be(0, "new piece should be spawned");
+        gameState.GetCurrentPieceOrFail().Row.Should().Be(0, "new piece should be spawned");
     }
     
     [Fact]
@@ -214,13 +240,13 @@ public class GameStateTests
         GameState gameState = new GameState(mockRandom.Object);
         gameState.Grid[0, 5] = 1;
         gameState.StartNewGame(); // Trigger game over
-        int initialColumn = gameState.CurrentPiece!.Column;
+        int initialColumn = gameState.GetCurrentPieceOrFail().Column;
         
         // Act
         gameState.MoveLeft();
         
         // Assert
-        gameState.CurrentPiece.Column.Should().Be(initialColumn, "piece should not move when game is over");
+        gameState.GetCurrentPieceOrFail().Column.Should().Be(initialColumn, "piece should not move when game is over");
     }
     
     [Fact]
@@ -230,13 +256,13 @@ public class GameStateTests
         Mock<IRandomProvider> mockRandom = CreateMockRandom();
         GameState gameState = new GameState(mockRandom.Object);
         gameState.StartNewGame();
-        int initialColumn = gameState.CurrentPiece!.Column;
+        int initialColumn = gameState.GetCurrentPieceOrFail().Column;
         
         // Act
         gameState.MoveLeft();
         
         // Assert
-        gameState.CurrentPiece!.Column.Should().Be(initialColumn - 1, "piece should move left");
+        gameState.GetCurrentPieceOrFail().Column.Should().Be(initialColumn - 1, "piece should move left");
     }
     
     [Fact]
@@ -247,13 +273,13 @@ public class GameStateTests
         GameState gameState = new GameState(mockRandom.Object);
         gameState.StartNewGame();
         // Move piece to left edge
-        gameState.CurrentPiece!.Column = 0;
+        gameState.GetCurrentPieceOrFail().Column = 0;
         
         // Act
         gameState.MoveLeft();
         
         // Assert
-        gameState.CurrentPiece!.Column.Should().Be(0, "piece should not move past left boundary");
+        gameState.GetCurrentPieceOrFail().Column.Should().Be(0, "piece should not move past left boundary");
     }
     
     [Fact]
@@ -263,7 +289,7 @@ public class GameStateTests
         Mock<IRandomProvider> mockRandom = CreateMockRandom();
         GameState gameState = new GameState(mockRandom.Object);
         gameState.StartNewGame();
-        int initialColumn = gameState.CurrentPiece!.Column;
+        int initialColumn = gameState.GetCurrentPieceOrFail().Column;
         // Block left position
         gameState.Grid[0, initialColumn - 1] = 1;
         
@@ -271,7 +297,7 @@ public class GameStateTests
         gameState.MoveLeft();
         
         // Assert
-        gameState.CurrentPiece!.Column.Should().Be(initialColumn, "piece should not move into blocked space");
+        gameState.GetCurrentPieceOrFail().Column.Should().Be(initialColumn, "piece should not move into blocked space");
     }
     
     [Fact]
@@ -296,13 +322,13 @@ public class GameStateTests
         GameState gameState = new GameState(mockRandom.Object);
         gameState.Grid[0, 5] = 1;
         gameState.StartNewGame(); // Trigger game over
-        int initialColumn = gameState.CurrentPiece!.Column;
+        int initialColumn = gameState.GetCurrentPieceOrFail().Column;
         
         // Act
         gameState.MoveRight();
         
         // Assert
-        gameState.CurrentPiece.Column.Should().Be(initialColumn, "piece should not move when game is over");
+        gameState.GetCurrentPieceOrFail().Column.Should().Be(initialColumn, "piece should not move when game is over");
     }
     
     [Fact]
@@ -312,13 +338,13 @@ public class GameStateTests
         Mock<IRandomProvider> mockRandom = CreateMockRandom();
         GameState gameState = new GameState(mockRandom.Object);
         gameState.StartNewGame();
-        int initialColumn = gameState.CurrentPiece!.Column;
+        int initialColumn = gameState.GetCurrentPieceOrFail().Column;
         
         // Act
         gameState.MoveRight();
         
         // Assert
-        gameState.CurrentPiece!.Column.Should().Be(initialColumn + 1, "piece should move right");
+        gameState.GetCurrentPieceOrFail().Column.Should().Be(initialColumn + 1, "piece should move right");
     }
     
     [Fact]
@@ -329,13 +355,13 @@ public class GameStateTests
         GameState gameState = new GameState(mockRandom.Object);
         gameState.StartNewGame();
         // Move piece to right edge
-        gameState.CurrentPiece!.Column = GameGrid.Columns - 1;
+        gameState.GetCurrentPieceOrFail().Column = GameGrid.Columns - 1;
         
         // Act
         gameState.MoveRight();
         
         // Assert
-        gameState.CurrentPiece!.Column.Should().Be(GameGrid.Columns - 1, "piece should not move past right boundary");
+        gameState.GetCurrentPieceOrFail().Column.Should().Be(GameGrid.Columns - 1, "piece should not move past right boundary");
     }
     
     [Fact]
@@ -345,7 +371,7 @@ public class GameStateTests
         Mock<IRandomProvider> mockRandom = CreateMockRandom();
         GameState gameState = new GameState(mockRandom.Object);
         gameState.StartNewGame();
-        int initialColumn = gameState.CurrentPiece!.Column;
+        int initialColumn = gameState.GetCurrentPieceOrFail().Column;
         // Block right position
         gameState.Grid[0, initialColumn + 1] = 1;
         
@@ -353,7 +379,7 @@ public class GameStateTests
         gameState.MoveRight();
         
         // Assert
-        gameState.CurrentPiece!.Column.Should().Be(initialColumn, "piece should not move into blocked space");
+        gameState.GetCurrentPieceOrFail().Column.Should().Be(initialColumn, "piece should not move into blocked space");
     }
     
     [Fact]
@@ -383,7 +409,7 @@ public class GameStateTests
         gameState.Drop();
         
         // Assert
-        gameState.CurrentPiece!.Row.Should().Be(0, "piece should not drop when game is over");
+        gameState.GetCurrentPieceOrFail().Row.Should().Be(0, "piece should not drop when game is over");
     }
     
     [Fact]
@@ -399,7 +425,7 @@ public class GameStateTests
         
         // Assert
         gameState.Grid[GameGrid.Rows - 1, 5].Should().BePositive("piece should be at bottom");
-        gameState.CurrentPiece!.Row.Should().Be(0, "new piece should be spawned");
+        gameState.GetCurrentPieceOrFail().Row.Should().Be(0, "new piece should be spawned");
     }
     
     [Fact]
@@ -455,11 +481,11 @@ public class GameStateTests
                 if (col != 5) gameState.Grid[row, col] = 1;
             }
         }
-        gameState.CurrentPiece!.Column = 5;
+        gameState.GetCurrentPieceOrFail().Column = 5;
         
         // Act - drop to fill column 5, but only one row at a time
         gameState.Drop(); // First piece lands, clears row 19, giving 40 points
-        gameState.CurrentPiece!.Column = 5;
+        gameState.GetCurrentPieceOrFail().Column = 5;
         gameState.Drop(); // Second piece lands, clears row 18 (now at bottom), giving 40 points
         
         // Assert - Two single line clears: 40 + 40 = 80
@@ -573,7 +599,7 @@ public class GameStateTests
         // Assert
         gameState.Score.Should().Be(0, "score should reset on new game");
         gameState.IsGameOver.Should().BeFalse("game over should reset");
-        gameState.CurrentPiece!.Row.Should().Be(0, "new piece should be at top");
+        gameState.GetCurrentPieceOrFail().Row.Should().Be(0, "new piece should be at top");
     }
     
     #region Level and Lines Tests
@@ -643,7 +669,7 @@ public class GameStateTests
             {
                 if (col != 5) gameState.Grid[GameGrid.Rows - 1, col] = 1;
             }
-            gameState.CurrentPiece!.Column = 5;
+            gameState.GetCurrentPieceOrFail().Column = 5;
             gameState.Drop();
         }
         
@@ -667,7 +693,7 @@ public class GameStateTests
             {
                 if (col != 5) gameState.Grid[GameGrid.Rows - 1, col] = 1;
             }
-            gameState.CurrentPiece!.Column = 5;
+            gameState.GetCurrentPieceOrFail().Column = 5;
             gameState.Drop();
         }
         
@@ -678,7 +704,7 @@ public class GameStateTests
         {
             if (col != 5) gameState.Grid[GameGrid.Rows - 1, col] = 1;
         }
-        gameState.CurrentPiece!.Column = 5;
+        gameState.GetCurrentPieceOrFail().Column = 5;
         gameState.Drop();
         
         // Assert - Level 2 should give 80 points (40 * 2)
@@ -715,7 +741,7 @@ public class GameStateTests
         gameState.StartNewGame();
         
         // Assert
-        gameState.NextPiece!.ColorIndex.Should().BeInRange(1, 7, "color index should be between 1 and 7");
+        gameState.GetNextPieceOrFail().ColorIndex.Should().BeInRange(1, 7, "color index should be between 1 and 7");
     }
     
     [Fact]
@@ -731,13 +757,13 @@ public class GameStateTests
         GameState gameState = new GameState(mockRandom.Object);
         gameState.StartNewGame();
         
-        int nextPieceColor = gameState.NextPiece!.ColorIndex;
+        int nextPieceColor = gameState.GetNextPieceOrFail().ColorIndex;
         
         // Act
         gameState.Drop();
         
         // Assert
-        gameState.CurrentPiece!.ColorIndex.Should().Be(nextPieceColor, 
+        gameState.GetCurrentPieceOrFail().ColorIndex.Should().Be(nextPieceColor, 
             "current piece should be the previous next piece");
     }
     

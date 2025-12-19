@@ -32,6 +32,7 @@
     <Compile Include="..\..\src\Tetris4Dummies\Core\Models\*.cs" Link="Core\Models\%(Filename)%(Extension)" />
     <Compile Include="..\..\src\Tetris4Dummies\Core\Helpers\*.cs" Link="Core\Helpers\%(Filename)%(Extension)" />
     <Compile Include="..\..\src\Tetris4Dummies\Presentation\Graphics\*.cs" Link="Presentation\Graphics\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\Tetris4Dummies\Presentation\ViewModels\*.cs" Link="Presentation\ViewModels\%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
