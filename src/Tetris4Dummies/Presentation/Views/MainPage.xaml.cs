@@ -7,8 +7,9 @@ public partial class MainPage : ContentPage
 {
 	private readonly GameState _gameState;
 	private readonly GameDrawable _gameDrawable;
+	private readonly NextPieceDrawable _nextPieceDrawable;
 	private System.Timers.Timer? _gameTimer;
-	private const double GameTickIntervalMs = 500; // Move down every 500ms
+	private const double BaseGameTickIntervalMs = 500; // Base speed at level 1
 
 	public MainPage()
 	{
@@ -16,7 +17,9 @@ public partial class MainPage : ContentPage
 		
 		_gameState = new GameState();
 		_gameDrawable = new GameDrawable(_gameState);
+		_nextPieceDrawable = new NextPieceDrawable(_gameState);
 		GameCanvas.Drawable = _gameDrawable;
+		NextPieceCanvas.Drawable = _nextPieceDrawable;
 	}
 
 	protected override void OnDisappearing()
@@ -39,13 +42,18 @@ public partial class MainPage : ContentPage
 		
 		// Start new game
 		_gameState.StartNewGame();
-		UpdateScore();
-		GameCanvas.Invalidate();
+		UpdateUI();
 		
 		// Start game loop
-		_gameTimer = new System.Timers.Timer(GameTickIntervalMs);
+		_gameTimer = new System.Timers.Timer(GetTimerInterval());
 		_gameTimer.Elapsed += OnGameTimerTick;
 		_gameTimer.Start();
+	}
+
+	private double GetTimerInterval()
+	{
+		// Speed increases with level (faster drops)
+		return BaseGameTickIntervalMs / (1 + (_gameState.Level - 1) * 0.1);
 	}
 
 	private void OnGameTimerTick(object? sender, System.Timers.ElapsedEventArgs e)
@@ -55,8 +63,13 @@ public partial class MainPage : ContentPage
 			if (!_gameState.IsGameOver)
 			{
 				_gameState.MoveDown();
-				UpdateScore();
-				GameCanvas.Invalidate();
+				UpdateUI();
+				
+				// Update timer interval if level changed
+				if (_gameTimer != null)
+				{
+					_gameTimer.Interval = GetTimerInterval();
+				}
 			}
 			else
 			{
@@ -80,12 +93,15 @@ public partial class MainPage : ContentPage
 	private void OnDropClicked(object? sender, EventArgs e)
 	{
 		_gameState.Drop();
-		UpdateScore();
-		GameCanvas.Invalidate();
+		UpdateUI();
 	}
 
-	private void UpdateScore()
+	private void UpdateUI()
 	{
-		ScoreLabel.Text = $"Score: {_gameState.Score}";
+		ScoreLabel.Text = _gameState.Score.ToString();
+		LevelLabel.Text = _gameState.Level.ToString();
+		LinesLabel.Text = _gameState.Lines.ToString();
+		GameCanvas.Invalidate();
+		NextPieceCanvas.Invalidate();
 	}
 }

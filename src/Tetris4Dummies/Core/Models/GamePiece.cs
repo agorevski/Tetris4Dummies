@@ -8,10 +8,20 @@ public class GamePiece
     public int Row { get; set; }
     public int Column { get; set; }
     
-    public GamePiece(int startColumn)
+    /// <summary>
+    /// Color index (1-7) for classic Tetris colors
+    /// </summary>
+    public int ColorIndex { get; set; }
+    
+    public GamePiece(int startColumn) : this(startColumn, 1)
+    {
+    }
+    
+    public GamePiece(int startColumn, int colorIndex)
     {
         Row = 0;
         Column = startColumn;
+        ColorIndex = colorIndex;
     }
     
     /// <summary>

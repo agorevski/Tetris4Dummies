@@ -9,13 +9,17 @@ public class GameState
 {
     private readonly GameGrid _grid;
     private GamePiece? _currentPiece;
+    private GamePiece? _nextPiece;
     private readonly IRandomProvider _random;
     
     public int Score { get; private set; }
+    public int Level { get; private set; }
+    public int Lines { get; private set; }
     public bool IsGameOver { get; private set; }
     
     public GameGrid Grid => _grid;
     public GamePiece? CurrentPiece => _currentPiece;
+    public GamePiece? NextPiece => _nextPiece;
     
     public GameState() : this(new RandomProvider())
     {
@@ -29,6 +33,8 @@ public class GameState
         _grid = new GameGrid();
         _random = randomProvider;
         Score = 0;
+        Level = 1;
+        Lines = 0;
         IsGameOver = false;
     }
     
@@ -42,7 +48,12 @@ public class GameState
         
         _grid.Reset();
         Score = 0;
+        Level = 1;
+        Lines = 0;
         IsGameOver = false;
+        
+        // Generate the next piece first
+        _nextPiece = CreateNewPiece();
         
         // If spawn was blocked before reset, set game over after spawning
         if (spawnBlocked)
@@ -57,12 +68,31 @@ public class GameState
     }
     
     /// <summary>
+    /// Creates a new piece with a random color
+    /// </summary>
+    private GamePiece CreateNewPiece()
+    {
+        int startColumn = GameGrid.Columns / 2;
+        int colorIndex = _random.Next(1, 8); // Random color 1-7
+        return new GamePiece(startColumn, colorIndex);
+    }
+    
+    /// <summary>
     /// Spawns a new piece at the top center of the grid
     /// </summary>
     private void SpawnNewPiece()
     {
-        int startColumn = GameGrid.Columns / 2;
-        _currentPiece = new GamePiece(startColumn);
+        // Use the next piece if available, otherwise create new
+        if (_nextPiece != null)
+        {
+            _currentPiece = _nextPiece;
+            _nextPiece = CreateNewPiece();
+        }
+        else
+        {
+            _currentPiece = CreateNewPiece();
+            _nextPiece = CreateNewPiece();
+        }
         
         // Check if the spawn position is already occupied (game over)
         if (!CanPlacePiece(_currentPiece))
@@ -155,7 +185,8 @@ public class GameState
         if (_currentPiece == null)
             return;
         
-        _grid[_currentPiece.Row, _currentPiece.Column] = 1;
+        // Store the color index instead of just 1
+        _grid[_currentPiece.Row, _currentPiece.Column] = _currentPiece.ColorIndex;
         
         // Clear any full rows and update score
         int linesCleared = _grid.ClearFullRows();
@@ -166,11 +197,27 @@ public class GameState
     }
     
     /// <summary>
-    /// Updates the score based on lines cleared
+    /// Updates the score based on lines cleared using classic Tetris scoring
     /// </summary>
     private void UpdateScore(int linesCleared)
     {
-        // Simple scoring: 100 points per line
-        Score += linesCleared * 100;
+        if (linesCleared == 0)
+            return;
+        
+        Lines += linesCleared;
+        
+        // Classic Tetris scoring: points * level
+        int basePoints = linesCleared switch
+        {
+            1 => 40,
+            2 => 100,
+            3 => 300,
+            4 => 1200, // Tetris!
+            _ => linesCleared * 40
+        };
+        Score += basePoints * Level;
+        
+        // Level increases every 10 lines
+        Level = (Lines / 10) + 1;
     }
 }

@@ -1,0 +1,64 @@
+name: Build and Test with Coverage
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore tests/Tetris4Dummies.Tests/Tetris4Dummies.Tests.csproj
+      
+    - name: Build
+      run: dotnet build tests/Tetris4Dummies.Tests/Tetris4Dummies.Tests.csproj --no-restore --configuration Release
+      
+    - name: Run tests with coverage
+      run: |
+        dotnet test tests/Tetris4Dummies.Tests/Tetris4Dummies.Tests.csproj \
+          --no-build \
+          --configuration Release \
+          /p:CollectCoverage=true \
+          /p:CoverletOutputFormat=cobertura \
+          /p:Exclude="[Tetris4Dummies.Tests]*Tests" \
+          /p:IncludeTestAssembly=true \
+          /p:Threshold=58 \
+          /p:ThresholdType=line \
+          /p:ThresholdStat=total
+          
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report
+        path: tests/Tetris4Dummies.Tests/coverage.cobertura.xml
+        
+    - name: Code Coverage Summary
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      if: always()
+      with:
+        filename: tests/Tetris4Dummies.Tests/coverage.cobertura.xml
+        badge: true
+        format: markdown
+        output: both
+        thresholds: '50 58'
+        
+    - name: Add Coverage PR Comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request' && always()
+      with:
+        recreate: true
+        path: code-coverage-results.md

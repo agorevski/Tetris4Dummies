@@ -4,87 +4,158 @@
              x:Class="Tetris4Dummies.Presentation.Views.MainPage"
              BackgroundColor="Black">
 
-    <Grid Padding="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <Grid Padding="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
 
-        <!-- Score Display -->
-        <VerticalStackLayout Grid.Row="0" Spacing="10" Margin="0,0,0,20">
-            <Label Text="Tetris4Dummies" 
-                   FontSize="32" 
+        <!-- Left side: Game board -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Title -->
+            <Label Grid.Row="0" 
+                   Text="TETRIS" 
+                   FontSize="36" 
                    FontAttributes="Bold"
-                   TextColor="White"
-                   HorizontalOptions="Center" />
-            <Label x:Name="ScoreLabel" 
-                   Text="Score: 0" 
-                   FontSize="20"
-                   TextColor="White"
-                   HorizontalOptions="Center" />
-        </VerticalStackLayout>
+                   TextColor="#00F0F0"
+                   HorizontalOptions="Center"
+                   Margin="0,0,0,10" />
 
-        <!-- Game Canvas -->
-        <Border Grid.Row="1" 
-                StrokeThickness="2"
-                Stroke="White"
-                HorizontalOptions="Center"
-                VerticalOptions="Center">
-            <GraphicsView x:Name="GameCanvas"
-                          WidthRequest="300"
-                          HeightRequest="600"
-                          HorizontalOptions="Center"
-                          VerticalOptions="Center" />
-        </Border>
+            <!-- Game Canvas -->
+            <Border Grid.Row="1" 
+                    StrokeThickness="3"
+                    Stroke="#404040"
+                    BackgroundColor="Black"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                <GraphicsView x:Name="GameCanvas"
+                              WidthRequest="300"
+                              HeightRequest="600"
+                              HorizontalOptions="Center"
+                              VerticalOptions="Center" />
+            </Border>
 
-        <!-- Controls -->
-        <VerticalStackLayout Grid.Row="2" Spacing="15" Margin="0,20,0,0">
-            <!-- New Game Button -->
-            <Button x:Name="NewGameBtn"
-                    Text="New Game"
-                    Clicked="OnNewGameClicked"
-                    BackgroundColor="#512BD4"
-                    TextColor="White"
-                    FontSize="18"
-                    HeightRequest="50" />
-            
             <!-- Movement Controls -->
-            <Grid ColumnSpacing="10" RowSpacing="10">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="60" />
-                    <RowDefinition Height="60" />
-                </Grid.RowDefinitions>
+            <Grid Grid.Row="2" ColumnSpacing="10" Margin="0,15,0,0" HorizontalOptions="Center">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="70" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Left Button -->
-                <Button Grid.Row="1" Grid.Column="0"
+                <Button Grid.Column="0"
                         Text="◄"
                         Clicked="OnLeftClicked"
-                        BackgroundColor="#333"
+                        BackgroundColor="#333333"
                         TextColor="White"
-                        FontSize="24" />
+                        FontSize="24"
+                        HeightRequest="60"
+                        CornerRadius="8" />
 
-                <!-- Drop Button -->
-                <Button Grid.Row="1" Grid.Column="1"
+                <Button Grid.Column="1"
                         Text="▼"
                         Clicked="OnDropClicked"
-                        BackgroundColor="#333"
+                        BackgroundColor="#333333"
                         TextColor="White"
-                        FontSize="24" />
+                        FontSize="24"
+                        HeightRequest="60"
+                        CornerRadius="8" />
 
-                <!-- Right Button -->
-                <Button Grid.Row="1" Grid.Column="2"
+                <Button Grid.Column="2"
                         Text="►"
                         Clicked="OnRightClicked"
-                        BackgroundColor="#333"
+                        BackgroundColor="#333333"
                         TextColor="White"
-                        FontSize="24" />
+                        FontSize="24"
+                        HeightRequest="60"
+                        CornerRadius="8" />
             </Grid>
+        </Grid>
+
+        <!-- Right side: Info panel -->
+        <VerticalStackLayout Grid.Column="1" Spacing="20" Margin="20,40,10,0" WidthRequest="140">
+            
+            <!-- Next Piece Preview -->
+            <Border StrokeThickness="2"
+                    Stroke="#404040"
+                    BackgroundColor="#1a1a1a"
+                    Padding="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="NEXT" 
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="#00F0F0"
+                           HorizontalOptions="Center" />
+                    <GraphicsView x:Name="NextPieceCanvas"
+                                  WidthRequest="60"
+                                  HeightRequest="60"
+                                  HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+            
+            <!-- Stats Panel -->
+            <Border StrokeThickness="2"
+                    Stroke="#404040"
+                    BackgroundColor="#1a1a1a"
+                    Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="SCORE" 
+                               FontSize="12"
+                               TextColor="#888888"
+                               HorizontalOptions="Center" />
+                        <Label x:Name="ScoreLabel" 
+                               Text="0" 
+                               FontSize="24"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                    
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="LEVEL" 
+                               FontSize="12"
+                               TextColor="#888888"
+                               HorizontalOptions="Center" />
+                        <Label x:Name="LevelLabel" 
+                               Text="1" 
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               TextColor="#00F0F0"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                    
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="LINES" 
+                               FontSize="12"
+                               TextColor="#888888"
+                               HorizontalOptions="Center" />
+                        <Label x:Name="LinesLabel" 
+                               Text="0" 
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               TextColor="#F0A000"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- New Game Button -->
+            <Button x:Name="NewGameBtn"
+                    Text="NEW GAME"
+                    Clicked="OnNewGameClicked"
+                    BackgroundColor="#A000F0"
+                    TextColor="White"
+                    FontSize="14"
+                    FontAttributes="Bold"
+                    HeightRequest="50"
+                    CornerRadius="8" />
         </VerticalStackLayout>
     </Grid>
 

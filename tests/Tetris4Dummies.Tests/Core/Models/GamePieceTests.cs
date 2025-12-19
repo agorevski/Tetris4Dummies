@@ -223,4 +223,56 @@ public class GamePieceTests
         // Assert
         piece.Column.Should().Be(7, "Column property should be settable");
     }
+    
+    #region ColorIndex Tests
+    
+    [Fact]
+    public void Constructor_WithColorIndex_ShouldSetColorIndex()
+    {
+        // Arrange & Act
+        GamePiece piece = new GamePiece(5, 3);
+        
+        // Assert
+        piece.ColorIndex.Should().Be(3, "color index should be set to provided value");
+        piece.Column.Should().Be(5, "column should be set correctly");
+        piece.Row.Should().Be(0, "row should start at 0");
+    }
+    
+    [Theory]
+    [InlineData(1)]
+    [InlineData(4)]
+    [InlineData(7)]
+    public void Constructor_WithDifferentColorIndices_ShouldWork(int colorIndex)
+    {
+        // Arrange & Act
+        GamePiece piece = new GamePiece(5, colorIndex);
+        
+        // Assert
+        piece.ColorIndex.Should().Be(colorIndex);
+    }
+    
+    [Fact]
+    public void Constructor_WithDefaultColorIndex_ShouldBeOne()
+    {
+        // Arrange & Act
+        GamePiece piece = new GamePiece(5);
+        
+        // Assert
+        piece.ColorIndex.Should().Be(1, "default color index should be 1");
+    }
+    
+    [Fact]
+    public void ColorIndex_CanBeSetDirectly()
+    {
+        // Arrange
+        GamePiece piece = new GamePiece(5, 1);
+        
+        // Act
+        piece.ColorIndex = 5;
+        
+        // Assert
+        piece.ColorIndex.Should().Be(5, "ColorIndex should be settable");
+    }
+    
+    #endregion
 }
