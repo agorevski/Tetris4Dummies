@@ -9,7 +9,10 @@ public partial class MainPage : ContentPage
 	private readonly GameDrawable _gameDrawable;
 	private readonly NextPieceDrawable _nextPieceDrawable;
 	private System.Timers.Timer? _gameTimer;
-	private const double BaseGameTickIntervalMs = 500; // Base speed at level 1
+	
+	// Game timing constants
+	private const double BasePieceDropIntervalMs = 500;
+	private const double LevelSpeedMultiplier = 0.1;
 
 	public MainPage()
 	{
@@ -53,7 +56,7 @@ public partial class MainPage : ContentPage
 	private double GetTimerInterval()
 	{
 		// Speed increases with level (faster drops)
-		return BaseGameTickIntervalMs / (1 + (_gameState.Level - 1) * 0.1);
+		return BasePieceDropIntervalMs / (1 + (_gameState.Level - 1) * LevelSpeedMultiplier);
 	}
 
 	private void OnGameTimerTick(object? sender, System.Timers.ElapsedEventArgs e)

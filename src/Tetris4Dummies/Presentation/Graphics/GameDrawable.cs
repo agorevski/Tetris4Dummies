@@ -13,18 +13,6 @@ public class GameDrawable : IDrawable
     private const float GridLineWidth = 1f;
     private const float BevelSize = 3f;
     
-    // Classic Tetris color palette
-    private static readonly Color[] TetrisColors = new[]
-    {
-        Color.FromArgb("#00F0F0"), // 1: Cyan (I-piece)
-        Color.FromArgb("#F0F000"), // 2: Yellow (O-piece)
-        Color.FromArgb("#A000F0"), // 3: Purple (T-piece)
-        Color.FromArgb("#00F000"), // 4: Green (S-piece)
-        Color.FromArgb("#F00000"), // 5: Red (Z-piece)
-        Color.FromArgb("#0000F0"), // 6: Blue (J-piece)
-        Color.FromArgb("#F0A000")  // 7: Orange (L-piece)
-    };
-    
     public GameDrawable(GameState gameState)
     {
         _gameState = gameState;
@@ -74,7 +62,7 @@ public class GameDrawable : IDrawable
                 int colorIndex = _gameState.Grid[row, col];
                 if (colorIndex > 0)
                 {
-                    Color color = GetColorForIndex(colorIndex);
+                    Color color = TetrisColorPalette.GetColor(colorIndex);
                     DrawBeveledCell(canvas, row, col, color);
                 }
             }
@@ -87,17 +75,8 @@ public class GameDrawable : IDrawable
             return;
         
         int colorIndex = _gameState.CurrentPiece.ColorIndex;
-        Color color = GetColorForIndex(colorIndex);
+        Color color = TetrisColorPalette.GetColor(colorIndex);
         DrawBeveledCell(canvas, _gameState.CurrentPiece.Row, _gameState.CurrentPiece.Column, color);
-    }
-    
-    private Color GetColorForIndex(int colorIndex)
-    {
-        if (colorIndex >= 1 && colorIndex <= TetrisColors.Length)
-        {
-            return TetrisColors[colorIndex - 1];
-        }
-        return Colors.Red; // Fallback color
     }
     
     private void DrawBeveledCell(ICanvas canvas, int row, int col, Color baseColor)
@@ -106,24 +85,7 @@ public class GameDrawable : IDrawable
         float y = row * CellSize + GridLineWidth;
         float size = CellSize - 2 * GridLineWidth;
         
-        // Draw base block
-        canvas.FillColor = baseColor;
-        canvas.FillRectangle(x, y, size, size);
-        
-        // Top-left highlight (lighter)
-        canvas.FillColor = baseColor.AddLuminosity(0.3f);
-        canvas.FillRectangle(x, y, size, BevelSize); // Top edge
-        canvas.FillRectangle(x, y, BevelSize, size); // Left edge
-        
-        // Bottom-right shadow (darker)
-        canvas.FillColor = baseColor.AddLuminosity(-0.3f);
-        canvas.FillRectangle(x, y + size - BevelSize, size, BevelSize); // Bottom edge
-        canvas.FillRectangle(x + size - BevelSize, y, BevelSize, size); // Right edge
-        
-        // Inner border for definition
-        canvas.StrokeColor = baseColor.AddLuminosity(-0.1f);
-        canvas.StrokeSize = 1f;
-        canvas.DrawRectangle(x + 1, y + 1, size - 2, size - 2);
+        TetrisColorPalette.DrawBeveledBlock(canvas, x, y, size, baseColor, BevelSize);
     }
     
     private void DrawGameOver(ICanvas canvas, RectF dirtyRect)

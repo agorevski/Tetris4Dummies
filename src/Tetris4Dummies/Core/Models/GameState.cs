@@ -7,6 +7,19 @@ namespace Tetris4Dummies.Core.Models;
 /// </summary>
 public class GameState
 {
+    // Scoring constants (Classic Tetris scoring)
+    public const int SingleLineScore = 40;
+    public const int DoubleLineScore = 100;
+    public const int TripleLineScore = 300;
+    public const int TetrisScore = 1200;
+    
+    // Progression constants
+    public const int LinesPerLevel = 10;
+    
+    // Color constants
+    public const int MinColorIndex = 1;
+    public const int MaxColorIndex = 7;
+    
     private readonly GameGrid _grid;
     private GamePiece? _currentPiece;
     private GamePiece? _nextPiece;
@@ -73,7 +86,7 @@ public class GameState
     private GamePiece CreateNewPiece()
     {
         int startColumn = GameGrid.Columns / 2;
-        int colorIndex = _random.Next(1, 8); // Random color 1-7
+        int colorIndex = _random.Next(MinColorIndex, MaxColorIndex + 1);
         return new GamePiece(startColumn, colorIndex);
     }
     
@@ -209,15 +222,14 @@ public class GameState
         // Classic Tetris scoring: points * level
         int basePoints = linesCleared switch
         {
-            1 => 40,
-            2 => 100,
-            3 => 300,
-            4 => 1200, // Tetris!
-            _ => linesCleared * 40
+            1 => SingleLineScore,
+            2 => DoubleLineScore,
+            3 => TripleLineScore,
+            4 => TetrisScore,
+            _ => linesCleared * SingleLineScore
         };
         Score += basePoints * Level;
         
-        // Level increases every 10 lines
-        Level = (Lines / 10) + 1;
+        Level = (Lines / LinesPerLevel) + 1;
     }
 }
