@@ -35,4 +35,9 @@
     <Compile Include="..\..\src\Tetris4Dummies\Presentation\ViewModels\*.cs" Link="Presentation\ViewModels\%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- Exclude auto-generated MAUI code and untestable code from coverage -->
+    <ExcludeByFile>**/obj/**/*.cs;**/*.g.cs</ExcludeByFile>
+  </PropertyGroup>
+
 </Project>

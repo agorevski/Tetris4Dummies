@@ -35,7 +35,7 @@ jobs:
           /p:CoverletOutputFormat=cobertura \
           /p:Exclude="[Tetris4Dummies.Tests]*Tests" \
           /p:IncludeTestAssembly=true \
-          /p:Threshold=58 \
+          /p:Threshold=90 \
           /p:ThresholdType=line \
           /p:ThresholdStat=total
           
@@ -54,7 +54,7 @@ jobs:
         badge: true
         format: markdown
         output: both
-        thresholds: '50 58'
+        thresholds: '80 90'
         
     - name: Add Coverage PR Comment
       uses: marocchino/sticky-pull-request-comment@v2
