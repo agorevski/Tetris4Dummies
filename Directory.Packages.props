@@ -12,9 +12,11 @@
     <PackageVersion Include="FluentAssertions" Version="6.12.1" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     
-    <!-- MAUI dependencies -->
-    <PackageVersion Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-    <PackageVersion Include="Microsoft.Maui.Graphics" Version="$(MauiVersion)" />
+    <!-- MAUI dependencies - use $(MauiVersion) when available, fallback to explicit version -->
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" Condition="'$(MauiVersion)' != ''" />
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.111" Condition="'$(MauiVersion)' == ''" />
+    <PackageVersion Include="Microsoft.Maui.Graphics" Version="$(MauiVersion)" Condition="'$(MauiVersion)' != ''" />
+    <PackageVersion Include="Microsoft.Maui.Graphics" Version="9.0.111" Condition="'$(MauiVersion)' == ''" />
     
     <!-- Logging -->
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />

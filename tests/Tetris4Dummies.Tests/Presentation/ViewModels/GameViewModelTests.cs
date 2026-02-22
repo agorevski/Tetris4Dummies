@@ -285,6 +285,115 @@ public class GameViewModelTests : IDisposable
     }
     
     #endregion
+    
+    #region Timer Tick Tests
+
+    [Fact]
+    public void OnGameTimerTick_WhenGameNotOver_ShouldMoveDown()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+        viewModel.StartNewGame();
+        int initialRow = viewModel.GameState.CurrentPiece!.Row;
+        
+        // Act
+        viewModel.OnGameTimerTick(null, null!);
+        
+        // Assert
+        viewModel.GameState.CurrentPiece!.Row.Should().Be(initialRow + 1);
+    }
+
+    [Fact]
+    public void OnGameTimerTick_WhenGameNotOver_ShouldRaisePropertyChanged()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+        viewModel.StartNewGame();
+        var propertiesChanged = new List<string?>();
+        viewModel.PropertyChanged += (s, e) => propertiesChanged.Add(e.PropertyName);
+        
+        // Act
+        viewModel.OnGameTimerTick(null, null!);
+        
+        // Assert
+        propertiesChanged.Should().Contain("Score");
+        propertiesChanged.Should().Contain("IsGameOver");
+    }
+
+    [Fact]
+    public void OnGameTimerTick_WhenGameOver_ShouldNotMoveDown()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+        viewModel.StartNewGame();
+        
+        // Fill the grid to cause game over
+        for (int row = 0; row < GameGrid.Rows; row++)
+        {
+            for (int col = 0; col < GameGrid.Columns; col++)
+            {
+                viewModel.GameState.Grid[row, col] = 1;
+            }
+        }
+        // Drop to trigger game over
+        viewModel.Drop();
+        
+        // Act - should not throw or move
+        var action = () => viewModel.OnGameTimerTick(null, null!);
+        action.Should().NotThrow();
+    }
+
+    [Fact]
+    public void OnGameTimerTick_WhenDisposed_ShouldReturnEarly()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+        viewModel.StartNewGame();
+        viewModel.Dispose();
+        
+        // Act & Assert - should not throw
+        var action = () => viewModel.OnGameTimerTick(null, null!);
+        action.Should().NotThrow();
+    }
+
+    [Fact]
+    public void GetTimerInterval_AtLevel1_ShouldReturnBaseInterval()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+        
+        // Act
+        double interval = viewModel.GetTimerInterval();
+        
+        // Assert
+        interval.Should().Be(500); // BasePieceDropIntervalMs / (1 + 0 * 0.1)
+    }
+
+    [Fact]
+    public void GetTimerInterval_AtHigherLevel_ShouldReturnFasterInterval()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+        viewModel.StartNewGame();
+        
+        // Simulate higher level by clearing lines
+        // Fill and clear 10 rows to reach level 2
+        for (int i = 0; i < 10; i++)
+        {
+            for (int col = 0; col < GameGrid.Columns; col++)
+            {
+                viewModel.GameState.Grid[GameGrid.Rows - 1, col] = 1;
+            }
+            viewModel.GameState.Grid[GameGrid.Rows - 1, 5] = 0;
+            viewModel.Drop();
+        }
+        
+        // Assert - at level > 1, interval should be less than base
+        double interval = viewModel.GetTimerInterval();
+        interval.Should().BeLessThan(500);
+    }
+
+    #endregion
 }
 
 /// <summary>

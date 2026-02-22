@@ -423,6 +423,42 @@ public class GameGridTests
         }
     }
     
+    #region Bounds Checking Tests
+    
+    [Theory]
+    [InlineData(-1, 0)]
+    [InlineData(20, 0)]
+    [InlineData(0, -1)]
+    [InlineData(0, 10)]
+    [InlineData(-1, -1)]
+    [InlineData(20, 10)]
+    public void Indexer_Get_OutOfBounds_ShouldThrowArgumentOutOfRangeException(int row, int col)
+    {
+        // Arrange
+        var grid = new GameGrid();
+        
+        // Act & Assert
+        var action = () => { var _ = grid[row, col]; };
+        action.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Theory]
+    [InlineData(-1, 0)]
+    [InlineData(20, 0)]
+    [InlineData(0, -1)]
+    [InlineData(0, 10)]
+    public void Indexer_Set_OutOfBounds_ShouldThrowArgumentOutOfRangeException(int row, int col)
+    {
+        // Arrange
+        var grid = new GameGrid();
+        
+        // Act & Assert
+        var action = () => grid[row, col] = 1;
+        action.Should().Throw<ArgumentOutOfRangeException>();
+    }
+    
+    #endregion
+    
     [Fact]
     public void ClearFullRows_WithBlocksAboveFullRows_ShouldMoveThemDown()
     {

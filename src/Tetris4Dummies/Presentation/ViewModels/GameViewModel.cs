@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Tetris4Dummies.Core.Helpers;
 using Tetris4Dummies.Core.Models;
 using Tetris4Dummies.Presentation.Graphics;
 
@@ -15,6 +16,7 @@ public class GameViewModel : INotifyPropertyChanged, IDisposable
     private readonly GameState _gameState;
     private readonly GameDrawable _gameDrawable;
     private readonly NextPieceDrawable _nextPieceDrawable;
+    private readonly IMainThreadDispatcher _dispatcher;
     private System.Timers.Timer? _gameTimer;
     private bool _isDisposed;
     
@@ -47,9 +49,14 @@ public class GameViewModel : INotifyPropertyChanged, IDisposable
     {
     }
     
-    public GameViewModel(GameState gameState)
+    public GameViewModel(GameState gameState) : this(gameState, new SynchronousDispatcher())
+    {
+    }
+    
+    public GameViewModel(GameState gameState, IMainThreadDispatcher dispatcher)
     {
         _gameState = gameState;
+        _dispatcher = dispatcher;
         _gameDrawable = new GameDrawable(_gameState);
         _nextPieceDrawable = new NextPieceDrawable(_gameState);
         
@@ -91,16 +98,16 @@ public class GameViewModel : INotifyPropertyChanged, IDisposable
         }
     }
     
-    private double GetTimerInterval()
+    internal double GetTimerInterval()
     {
         return BasePieceDropIntervalMs / (1 + (_gameState.Level - 1) * LevelSpeedMultiplier);
     }
     
-    private void OnGameTimerTick(object? sender, System.Timers.ElapsedEventArgs e)
+    internal void OnGameTimerTick(object? sender, System.Timers.ElapsedEventArgs e)
     {
         if (_isDisposed) return;
         
-        MainThread.BeginInvokeOnMainThread(() =>
+        _dispatcher.BeginInvokeOnMainThread(() =>
         {
             if (!_gameState.IsGameOver)
             {
@@ -168,6 +175,14 @@ public class GameViewModel : INotifyPropertyChanged, IDisposable
         }
         
         _isDisposed = true;
+    }
+    
+    /// <summary>
+    /// Default synchronous dispatcher for non-UI contexts (testing, etc.)
+    /// </summary>
+    private class SynchronousDispatcher : IMainThreadDispatcher
+    {
+        public void BeginInvokeOnMainThread(Action action) => action();
     }
 }
 

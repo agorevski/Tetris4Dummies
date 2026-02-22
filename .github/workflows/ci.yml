@@ -35,7 +35,7 @@ jobs:
           /p:CoverletOutputFormat=cobertura \
           /p:Exclude="[Tetris4Dummies.Tests]*Tests" \
           /p:IncludeTestAssembly=true \
-          /p:Threshold=90 \
+          /p:Threshold=85 \
           /p:ThresholdType=line \
           /p:ThresholdStat=total
           

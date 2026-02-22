@@ -55,4 +55,8 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\Tetris4Dummies.Core\Tetris4Dummies.Core.csproj" />
+	</ItemGroup>
+
 </Project>

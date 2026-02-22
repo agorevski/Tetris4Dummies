@@ -6,11 +6,11 @@ public partial class MainPage : ContentPage
 {
 	private readonly GameViewModel _viewModel;
 
-	public MainPage()
+	public MainPage(GameViewModel viewModel)
 	{
 		InitializeComponent();
 		
-		_viewModel = new GameViewModel();
+		_viewModel = viewModel;
 		_viewModel.PropertyChanged += OnViewModelPropertyChanged;
 		_viewModel.GameStateChanged += OnGameStateChanged;
 		

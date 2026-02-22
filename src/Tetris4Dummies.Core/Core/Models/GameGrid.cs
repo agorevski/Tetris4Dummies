@@ -16,12 +16,29 @@ public class GameGrid
     }
     
     /// <summary>
-    /// Gets the value at the specified position (0 = empty, 1 = filled)
+    /// Gets or sets the value at the specified position (0 = empty, positive = filled with color)
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when row or col is outside grid bounds</exception>
     public int this[int row, int col]
     {
-        get => _grid[row, col];
-        set => _grid[row, col] = value;
+        get
+        {
+            ValidateBounds(row, col);
+            return _grid[row, col];
+        }
+        set
+        {
+            ValidateBounds(row, col);
+            _grid[row, col] = value;
+        }
+    }
+    
+    private void ValidateBounds(int row, int col)
+    {
+        if (row < 0 || row >= Rows)
+            throw new ArgumentOutOfRangeException(nameof(row), row, $"Row must be between 0 and {Rows - 1}");
+        if (col < 0 || col >= Columns)
+            throw new ArgumentOutOfRangeException(nameof(col), col, $"Column must be between 0 and {Columns - 1}");
     }
     
     /// <summary>
