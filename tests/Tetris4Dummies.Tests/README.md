@@ -8,14 +8,21 @@ This test suite provides comprehensive unit testing for the Tetris4Dummies game,
 
 ```
 Tetris4Dummies.Tests/
-├── Models/
-│   ├── GamePieceTests.cs      - 18 tests covering GamePiece functionality
-│   ├── GameGridTests.cs       - 31 tests covering GameGrid functionality  
-│   └── GameStateTests.cs      - 40 tests covering GameState functionality
-├── Graphics/
-│   └── GameDrawableTests.cs   - (To be implemented)
-└── UI/
-    └── MainPageTests.cs       - (To be implemented)
+├── Core/
+│   ├── Models/
+│   │   ├── GamePieceTests.cs      - 18 tests covering GamePiece functionality
+│   │   ├── GameGridTests.cs       - 31 tests covering GameGrid functionality
+│   │   └── GameStateTests.cs      - 40 tests covering GameState functionality
+│   └── Helpers/
+│       ├── ScoringServiceTests.cs - Scoring calculation tests
+│       └── RandomProviderTests.cs - Random provider tests
+├── Presentation/
+│   ├── ViewModels/
+│   │   └── GameViewModelTests.cs  - MVVM ViewModel tests
+│   └── Graphics/
+│       ├── GameDrawableTests.cs   - Game grid rendering tests
+│       └── NextPieceDrawableTests.cs - Next piece preview tests
+└── README.md
 ```
 
 ## Current Test Coverage
@@ -47,11 +54,28 @@ Tetris4Dummies.Tests/
 - Property accessors
 - Complete game flow scenarios
 
-**Note:** 5 tests currently fail due to game logic issues where:
-1. `StartNewGame()` clears grid before checking spawn position
-2. Movement methods don't properly check `IsGameOver` flag
+### ✅ ScoringService Tests
+- `CalculateScore` with various line counts and levels
+- `CalculateLevel` progression based on total lines cleared
+- `LinesPerLevel` configuration
 
-These failures represent **actual bugs discovered by the test suite**, demonstrating the value of comprehensive testing.
+### ✅ RandomProvider Tests
+- `Next()` returns values within expected ranges
+- `Next(maxValue)` and `Next(minValue, maxValue)` boundary behavior
+
+### ✅ GameViewModel Tests
+- MVVM command binding (NewGameCommand, MoveLeftCommand, MoveRightCommand, DropCommand)
+- Property change notifications (Score, Level, IsGameOver)
+- Timer tick and game loop behavior
+- `IDisposable` cleanup
+
+### ✅ GameDrawable Tests
+- Grid rendering with mocked ICanvas
+- Placed block drawing
+- Current piece rendering
+
+### ✅ NextPieceDrawable Tests
+- Next piece preview rendering with mocked ICanvas
 
 ## Test Frameworks & Tools
 
@@ -173,45 +197,30 @@ private Mock<IRandomProvider> CreateMockRandom()
 ## Key Testing Insights
 
 ### Discovered Issues
-1. **Game Over Logic**: Movement methods continue to work even when `IsGameOver` is true
-2. **Spawn Blocking**: `StartNewGame()` resets grid before checking if spawn position is blocked
+1. **Game Over Logic**: Previously, movement methods continued to work when `IsGameOver` was true — now fixed with proper guard checks
+2. **Spawn Blocking**: `StartNewGame()` previously reset grid before checking spawn position — now fixed
 3. **Boundary Checking**: GamePiece allows out-of-bounds values (by design, checked by GameState)
 
 ### Coverage Gaps
-- GameDrawable rendering logic (requires ICanvas mocking)
-- MainPage UI interactions (requires MAUI test infrastructure)
 - Platform-specific code in Platforms/ directories
 
 ## Future Enhancements
 
 ### Remaining Test Implementation
-1. **GameDrawable Tests** - Mock ICanvas to verify drawing operations
-2. **MainPage UI Tests** - Test button handlers, timer lifecycle, score updates
-3. **Integration Tests** - End-to-end gameplay scenarios
-4. **Performance Tests** - Ensure game loop maintains target frame rate
+1. **Integration Tests** - End-to-end gameplay scenarios
+2. **Performance Tests** - Ensure game loop maintains target frame rate
+3. **MainPage UI Tests** - Test button handlers and UI lifecycle
 
-### Recommended Fixes
-Based on test failures, the following game logic fixes are recommended:
+### Project Reference Approach
 
-1. **Fix StartNewGame spawn check**:
-   ```csharp
-   public void StartNewGame()
-   {
-       Score = 0;
-       IsGameOver = false;
-       _grid.Reset();
-       SpawnNewPiece();  // Already checks spawn position
-   }
-   ```
-
-2. **Enforce IsGameOver checks** in movement methods (already implemented but tests reveal edge cases)
+Core game logic is referenced via `ProjectReference` to `Tetris4Dummies.Core`. Presentation-layer files (ViewModels, Graphics, Services) are linked into the test project via `Compile Include` since they depend on MAUI assemblies.
 
 ## Test Statistics
 
-- **Total Tests**: 89
-- **Passing**: 84 (94.4%)
-- **Failing**: 5 (5.6%) - All failures due to discovered game logic issues
-- **Code Coverage**: ~95% for Models namespace
+- **Total Tests**: ~181
+- **Passing**: 181 (100%)
+- **Failing**: 0
+- **Code Coverage**: ~95% for Core and Presentation namespaces
 
 ## Contributing
 

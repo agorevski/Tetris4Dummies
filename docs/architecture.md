@@ -6,35 +6,66 @@ This document describes the architecture, structure, and design patterns used in
 
 - **Framework**: .NET MAUI (Multi-platform App UI)
 - **Language**: C# 12 with .NET 9.0
-- **UI Pattern**: XAML with code-behind
+- **UI Pattern**: MVVM (Model-View-ViewModel)
 - **Graphics**: Microsoft.Maui.Graphics (IDrawable pattern)
 - **Target Platforms**: Android (primary), iOS, Windows, macOS, Tizen
 
 ## Project Structure
 
 ```text
-Tetris4Dummies/
-├── Models/              # Core game logic
-│   ├── GameGrid.cs      # 2D grid data structure
-│   ├── GamePiece.cs     # Falling block representation
-│   └── GameState.cs     # Game state management
-├── Graphics/            # Custom rendering
-│   └── GameDrawable.cs  # IDrawable implementation
-├── Platforms/           # Platform-specific code
-│   ├── Android/
-│   ├── iOS/
-│   ├── Windows/
-│   ├── MacCatalyst/
-│   └── Tizen/
-├── Resources/           # Assets and resources
-│   ├── Fonts/
-│   ├── Images/
-│   ├── Splash/
-│   └── Styles/
-├── MainPage.xaml[.cs]   # Main UI and game controls
-├── App.xaml[.cs]        # Application lifecycle
-└── AppShell.xaml[.cs]   # App navigation shell
+src/
+├── Tetris4Dummies.Core/           # Shared Core library (net9.0, no MAUI dependency)
+│   └── Core/
+│       ├── Models/
+│       │   ├── GameGrid.cs        # 2D grid data structure (20×10)
+│       │   ├── GamePiece.cs       # Falling block representation
+│       │   └── GameState.cs       # Game state management and orchestration
+│       └── Helpers/
+│           ├── IRandomProvider.cs  # Random number abstraction for testability
+│           ├── RandomProvider.cs   # Default System.Random implementation
+│           ├── IScoringService.cs  # Scoring calculation interface
+│           ├── ScoringService.cs   # Classic Tetris scoring implementation
+│           └── IMainThreadDispatcher.cs  # Main thread dispatch abstraction
+├── Tetris4Dummies/                 # .NET MAUI app (net9.0-android)
+│   ├── Presentation/
+│   │   ├── Views/
+│   │   │   ├── MainPage.xaml      # Main game UI
+│   │   │   └── MainPage.xaml.cs   # Code-behind with DI constructor
+│   │   ├── ViewModels/
+│   │   │   └── GameViewModel.cs   # MVVM ViewModel + RelayCommand
+│   │   ├── Graphics/
+│   │   │   ├── GameDrawable.cs    # Main game grid renderer
+│   │   │   ├── NextPieceDrawable.cs  # Next piece preview renderer
+│   │   │   └── TetrisColorPalette.cs # Shared color definitions
+│   │   ├── Services/
+│   │   │   └── MainThreadDispatcher.cs # MAUI MainThread implementation
+│   │   └── Styles/
+│   ├── Platforms/                  # Platform-specific code
+│   ├── Resources/                  # Assets and resources
+│   ├── MauiProgram.cs             # DI container registration
+│   ├── App.xaml[.cs]              # Application lifecycle
+│   └── AppShell.xaml[.cs]         # App navigation shell
+tests/
+└── Tetris4Dummies.Tests/          # Unit test project (net9.0)
+    ├── Core/
+    │   ├── Models/
+    │   │   ├── GameGridTests.cs
+    │   │   ├── GamePieceTests.cs
+    │   │   └── GameStateTests.cs
+    │   └── Helpers/
+    │       ├── ScoringServiceTests.cs
+    │       └── RandomProviderTests.cs
+    └── Presentation/
+        ├── ViewModels/
+        │   └── GameViewModelTests.cs
+        └── Graphics/
+            ├── GameDrawableTests.cs
+            └── NextPieceDrawableTests.cs
 ```
+
+### Core Library
+
+`Tetris4Dummies.Core` is a shared .NET 9.0 class library with no MAUI dependency. It contains all game logic (models) and service interfaces/implementations (helpers), allowing it to be referenced by both the MAUI app and the unit test project without requiring MAUI workloads.
 
 ## Core Components
 
@@ -94,37 +125,58 @@ Orchestrates the overall game logic.
 - `LockCurrentPiece()` - Fixes piece in grid
 - `UpdateScore(linesCleared)` - Updates score (100 points/line)
 
+### Helpers Layer
+
+#### IRandomProvider / RandomProvider
+
+Abstraction over `System.Random` enabling deterministic testing. `RandomProvider` is the default implementation using `System.Random`.
+
+#### IScoringService / ScoringService
+
+Defines scoring calculation logic. `ScoringService` implements classic Tetris scoring with `CalculateScore(linesCleared, level)`, `CalculateLevel(totalLinesCleared)`, and `LinesPerLevel` configuration.
+
+#### IMainThreadDispatcher
+
+Abstraction for dispatching work to the UI main thread, decoupling game logic from MAUI's `MainThread.BeginInvokeOnMainThread()`.
+
 ### Graphics Layer
 
 #### GameDrawable
 
-Implements `IDrawable` interface for custom rendering.
+Implements `IDrawable` interface for rendering the main game grid, placed blocks, and the current falling piece using `Microsoft.Maui.Graphics` APIs.
+
+#### NextPieceDrawable
+
+Implements `IDrawable` to render a preview of the next piece in a smaller panel, giving the player look-ahead information.
+
+#### TetrisColorPalette
+
+Defines shared color constants used across all rendering components for consistent block and grid styling.
+
+### ViewModel Layer
+
+#### GameViewModel
+
+Implements the MVVM pattern using `INotifyPropertyChanged` and `RelayCommand`.
 
 **Responsibilities**:
 
-- Renders the game grid
-- Draws placed blocks
-- Draws the current falling piece
-- Uses `Microsoft.Maui.Graphics` API for cross-platform drawing
+- Exposes bindable properties (Score, Level, IsGameOver, etc.) to the View
+- Provides commands (NewGameCommand, MoveLeftCommand, MoveRightCommand, DropCommand)
+- Manages the game loop timer and tick logic
+- Uses `IMainThreadDispatcher` to marshal UI updates to the main thread
+- Implements `IDisposable` for proper timer cleanup
 
 ### UI Layer
 
 #### MainPage
 
-Main game interface containing:
+Main game interface using constructor injection to receive `GameViewModel`.
 
-- GraphicsView for game rendering
-- Control buttons (Left, Right, Drop)
-- New Game button
-- Score display
-- Game loop timer management
-
-**Key Features**:
-
-- Timer-based game loop
-- Touch/button controls
-- Main thread synchronization for UI updates
-- Proper lifecycle management (OnAppearing/OnDisappearing)
+- Binds to `GameViewModel` for all game state and commands
+- Contains `GraphicsView` components for game grid and next piece preview
+- Control buttons bound to ViewModel commands
+- Lifecycle management (OnAppearing/OnDisappearing) delegates to ViewModel
 
 ## Design Patterns
 
@@ -134,9 +186,9 @@ Main game interface containing:
 - **Graphics**: Rendering logic using platform-agnostic APIs
 - **UI**: Event handling and user interaction
 
-### Code-Behind Pattern
+### MVVM Pattern
 
-Uses XAML for UI layout with C# code-behind for logic. This is appropriate for the game's relatively simple UI requirements.
+Uses XAML for UI layout with `GameViewModel` as the binding context. The ViewModel exposes commands and observable properties, keeping the View (MainPage) free of game logic.
 
 ### IDrawable Pattern
 
@@ -144,7 +196,14 @@ Leverages MAUI's `IDrawable` interface for custom graphics, ensuring cross-platf
 
 ### Dependency Injection
 
-Services can be registered in `MauiProgram.cs` for dependency injection throughout the app.
+Services are registered in `MauiProgram.cs`:
+
+- `IRandomProvider` → `RandomProvider`
+- `IScoringService` → `ScoringService`
+- `IMainThreadDispatcher` → `MainThreadDispatcher`
+- `GameState` (transient)
+- `GameViewModel` (transient)
+- `MainPage` (transient, receives `GameViewModel` via constructor injection)
 
 ## Game Logic Flow
 
